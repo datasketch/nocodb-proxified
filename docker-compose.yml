@@ -6,8 +6,26 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes:
+      - certs:/etc/nginx/certs
+      - conf:/etc/nginx/conf.d
+      - dhparam:/etc/nginx/dhparam
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
+    labels:
+      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    volumes:
+      - acme:/etc/acme.sh
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - dhparam:/etc/nginx/dhparam:ro
+      - vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   root_db:
     image: postgres:12
@@ -36,8 +54,16 @@ services:
       - "8080"
     environment:
       VIRTUAL_HOST:
+      LETSENCRYPT_HOST:
+      LETSENCRYPT_EMAIL:
       NC_AUTH_JWT_SECRET: 
       NC_DB: "pg://root_db:5432?user=$POSTGRES_USER&p=$POSTGRES_PASSWORD&d=$POSTGRES_DB"
 
 volumes:
-  db_data: {}
+  db_data:
+  certs:
+  vhost:
+  html:
+  acme:
+  dhparam:
+  conf:
