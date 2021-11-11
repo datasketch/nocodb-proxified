@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  root_db:
+    image: postgres:12
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - POSTGRES_DB
+    healthcheck:
+      test: pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+      interval: 10s
+      timeout: 2s
+      retries: 10
+
+  nocodb:
+    image: nocodb/nocodb
+    depends_on:
+      root_db:
+        condition: service_healthy
+    restart: always
+    expose:
+      - "8080"
+    environment:
+      VIRTUAL_HOST:
+      NC_AUTH_JWT_SECRET: 
+      NC_DB: "pg://root_db:5432?user=$POSTGRES_USER&p=$POSTGRES_PASSWORD&d=$POSTGRES_DB"
+
+volumes:
+  db_data: {}
