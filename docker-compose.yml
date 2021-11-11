@@ -19,6 +19,9 @@ services:
 
   nginx-proxy-acme:
     image: nginxproxy/acme-companion
+    restart: always
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
     volumes:
       - acme:/etc/acme.sh
       - certs:/etc/nginx/certs
