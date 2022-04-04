@@ -53,6 +53,8 @@ services:
       root_db:
         condition: service_healthy
     restart: always
+    volumes:
+      - nc_data:/usr/app/data
     expose:
       - "8080"
     environment:
@@ -70,3 +72,4 @@ volumes:
   acme:
   dhparam:
   conf:
+  nc_data:
